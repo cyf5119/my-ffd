@@ -11,22 +11,23 @@ omen_color[31500] = 0, col.red_line # 只留下红线描边，不然放一起中
 
 class Program_Loop:
     def __init__(self):
-        self.state = 0
-        self.mj = [[], [], [], []]
-        self.tower = [[], [], [], []]
-        self.tower_pos = [[], [], [], []]
-        self.tether_pos = [[], [], [], []]
-        self.o = []
-        top.on_reset(lambda _: setattr(self, 'state', 0)) 
+        self.state = 0 # 阶段控制
+        self.mj = [[], [], [], []] # 装麻将玩家id
+        self.tower = [[], [], [], []] # 装塔id
+        self.tower_pos = [[], [], [], []] # 装塔优先级 北东南西0123
+        self.tether_pos = [[], [], [], []] # 装线优先级 同上
+        self.o = [] # 装大圈用
+        top.on_reset(lambda _: setattr(self, 'state', 0)) # 团灭重置
         top.on_cast(31491)(self.start) # 循环程序读条
         top.on_add_status(3004,3005,3006,3451)(self.mahjong) # 上麻将buff
         top.on_object_spawn(2013244)(self.tower_spawn) # 生成塔
         top.on_set_channel(89)(self.set_tether) # 接线
-        top.on_cancel_channel(89)(self.remove_channel) # 被接走
-        top.on_add_status_by_action(3401)(self.end_omen) # 体力衰减
-        top.on_cast(31499)(lambda _: setattr(self, 'state', 0)) # 读条全能之主禁用
+        top.on_cancel_channel(89)(self.remove_channel) # 线被接走
+        top.on_add_status_by_action(3401)(self.end_omen) # 被附加体力衰减
+        top.on_cast(31499)(lambda _: setattr(self, 'state', 0)) # 读条全能之主
 
     def start(self, msg: NetworkMessage[zone_server.ActorCast]):
+        # 初始化
         self.state = 5
         self.mj = [[], [], [], []]
         self.tower = [[], [], [], []]
@@ -35,6 +36,7 @@ class Program_Loop:
         self.o = []
 
     def mahjong(self, msg: ActorControlMessage[actor_control.AddStatus]):
+        # 进行麻将判断，并按照优先级装进去
         if not self.state: return
         mj_buff = [3004, 3005, 3006, 3451] # 麻将1234buff
         actor = raid_utils.NActor.by_id(msg.source_id)
@@ -58,38 +60,36 @@ class Program_Loop:
         elif tower.pos.x < 90 : tower_pos = 3
         self.tower[times].append(tower.id)
         self.tower_pos[times].append(tower_pos)
-
+        # 把塔和塔优先级装入，并排序
         if len(self.tower[times]) == 2:
             if self.tower_pos[times][0] > self.tower_pos[times][1]: # 保证按照北东南西
                 self.tower[times][0], self.tower[times][1] = self.tower[times][1], self.tower[times][0]
                 self.tower_pos[times][0], self.tower_pos[times][1] = self.tower_pos[times][1], self.tower_pos[times][0]
-            for i in range(4):
+            for i in range(4): # 装入线优先级
                 if not i in self.tower_pos[times]:
                     self.tether_pos[times].append(i)
             myself = raid_utils.get_me()
-            if myself.id in self.mj[times]:
+            if myself.id in self.mj[times]: # 这里限制只画自己的 改一改可以测全队
                 _priority = self.mj[times].index(myself.id)
                 _tower = raid_utils.NActor.by_id(self.tower[times][_priority])
-                raid_utils.draw_circle(radius=3, pos=_tower, duration=10,
-                                       line_color=col.green_line, surface_color=col.green_surface)
+                raid_utils.draw_circle(radius=3, pos=_tower, duration=10,line_color=col.green_line, surface_color=col.green_surface)
                 raid_utils.draw_line(myself, _tower, duration=10, width=5, color=col.green_line)
-            if self.state: self.state -= 1
+            if self.state: self.state -= 1 # 阶段控制
             
     def set_tether(self, msg: ActorControlMessage[actor_control.SetChanneling]):
         if not self.state: return
-        # 31498 冲击波 15708 是大蟑螂
         beetle = raid_utils.NActor.by_id(msg.param.target_id)
         player = raid_utils.NActor.by_id(msg.source_id)
-        times = 4 - self.state
+        times = 4 - self.state # 线在塔后生成所以得比上面的少1
 
         if player.id in self.mj[(times + 2) % 4]:
             o = raid_utils.timeout_when_channeling_change(raid_utils.draw_circle(radius=15, pos=player, duration=15, surface_color=0, line_color=col.red_line), msg)
-#            o.line_width = 5 # 没效果，应该不是这样写，不会写
-            i = [o, msg]
-            self.o.append(i)
+            # o.line_width = 5 # 没效果，应该不是这样写，不会写，开摆以后再说
+            i = [o, msg] # 有个不懂的bug在多了这一步后就没了
+            self.o.append(i) 
             # logger.debug(f'加入{i}')
             myself = raid_utils.get_me()
-            if myself.id == player.id:
+            if myself.id == player.id: # 同样是限制只画自己的
                 _idx = self.mj[(times + 2) % 4].index(player.id)
                 _p = glm.rotateY(glm.vec3(0, 0, -19), -self.tether_pos[times][_idx]/2 * math.pi) + center
                 raid_utils.timeout_when_channeling_change(raid_utils.draw_line(player, _p, width=5, color=col.green_line, duration=10), msg)
@@ -114,17 +114,17 @@ class Program_Loop:
                 i[0].timeout()
                 # logger.debug(f'炸圈移除{i}')
         times = 4 - self.state
-        actor = raid_utils.NActor.by_id(msg.target_id)
+        actor = raid_utils.NActor.by_id(msg.target_id) # 吃大圈的人
         beetle = next(raid_utils.find_actor_by_base_id(15708))
         raid_utils.timeout_when_channeling_change(raid_utils.draw_line(actor, beetle, color=col.red_line, width=5, duration=10), o_msg)
         _idx = 0
         if msg.target_id in self.mj[(times + 1) % 4]:
             _idx = self.mj[(times + 1) % 4].index(msg.target_id)
-        actor2 = raid_utils.NActor.by_id(self.mj[(times + 2) % 4][_idx])
+        actor2 = raid_utils.NActor.by_id(self.mj[(times + 2) % 4][_idx]) # 这个是接下来要接线的人
         myself = raid_utils.get_me()
-        if actor2.id != myself.id: return
-        p1 = lambda _: (actor.pos + beetle.pos)/2
-        p2 = glm.rotateY(glm.vec3(0, 0, -19), -self.tether_pos[times][_idx]/2 * math.pi) + center
+        if actor2.id != myself.id: return # 限制只画自己
+        p1 = lambda _: (actor.pos + beetle.pos)/2 # 二者中点，接线位置
+        p2 = glm.rotateY(glm.vec3(0, 0, -19), -self.tether_pos[times][_idx]/2 * math.pi) + center # 拉线位置
         raid_utils.timeout_when_channeling_change(raid_utils.draw_circle(radius=1, pos=p1, duration=10, surface_color=0, line_color=col.green_line), o_msg)
         raid_utils.timeout_when_channeling_change(raid_utils.draw_line(p1, actor2, color=col.green_line, width=5, duration=10), o_msg)
         raid_utils.timeout_when_channeling_change(raid_utils.draw_circle(radius=1, pos=p2, duration=10, surface_color=0, line_color=col.orange_line), o_msg)
@@ -140,9 +140,8 @@ def condensed_wave_cannon_kyrios(msg: ActorControlMessage[actor_control.AddStatu
     omega = next(raid_utils.find_actor_by_base_id(15708))
     player = raid_utils.NActor.by_id(msg.source_id)
     if raid_utils.assert_status(player, msg.param.status_id, 5):
-        raid_utils.draw_rect(pos=omega, width=6, length=30, duration=5,
-                             facing=lambda _: glm.polar(player.update().pos - omega.update().pos).y,
-                             line_color=col.yellow_line, surface_color=col.yellow_surface)
+        raid_utils.draw_rect(pos=omega, width=6, length=30, duration=5, line_color=col.yellow_line, surface_color=col.yellow_surface,
+                             facing=lambda _: glm.polar(player.update().pos - omega.update().pos).y)
         
 @top.on_add_status(3424, 3495, 3496, 3497)
 def guided_missile_kyrios(msg: ActorControlMessage[actor_control.AddStatus]):
@@ -181,7 +180,7 @@ class Diffuse_Wave_Cannon_Kyrios:
                             facing= lambda _: glm.polar(raid_utils.get_actor_by_dis(omega, -1).pos - omega.update().pos).y)
         raid_utils.draw_fan(pos=omega, degree=120, radius=30, duration=15,
                             facing= lambda _: glm.polar(raid_utils.get_actor_by_dis(omega, -2).pos - omega.update().pos).y)
-        POINT = [glm.vec3(0,0,-14),
+        POINT = [glm.vec3(0,0,-14), # THD顺序的点位，有需求自己修改
                  glm.vec3(0,0,-14),
                  glm.vec3(-9.3,0,4.3),
                  glm.vec3(9.3,0,4.3),
