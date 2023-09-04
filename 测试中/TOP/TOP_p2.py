@@ -20,7 +20,7 @@ class Sony:
     priority = 0
 
 @top.on_cast(31551, 32788) # P2一运与P5二运读条
-def suoni_youxianji(msg: NetworkMessage[zone_server.ActorCast]):
+def sony_start(msg: NetworkMessage[zone_server.ActorCast]):
     Sony.list = [[], [], [], []] # 清空列表并选择优先级
     if msg.message.action_id == 31551:
         Sony.priority = The_Omega_Protocol.p2_Party_Synergy_priority.value
@@ -29,7 +29,7 @@ def suoni_youxianji(msg: NetworkMessage[zone_server.ActorCast]):
 
 @top.on_lockon(416, 417, 418, 419)
 # 圈 三角 方块 叉 z3o3_firechain_01c 02c 03c 04c
-def suoni(msg: ActorControlMessage[actor_control.SetLockOn]):
+def sony_lockon(msg: ActorControlMessage[actor_control.SetLockOn]):
     a_id = msg.source_id
     # logger.debug(f'索尼target_id = {msg.target_id}\n索尼source_id = {a_id}') # source_id 没问题 但有重复触发情况
     match msg.param.lockon_id:
