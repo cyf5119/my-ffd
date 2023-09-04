@@ -37,3 +37,9 @@ class The_Omega_Protocol():
         '绝欧米茄/优先级设置/P1-循环程序', [('HTDH', 'h1mtstd1d2d3d4h2'),('THD', 'mtsth1h2d1d2d3d4'),], 'h1mtstd1d2d3d4h2'))
 #    p1_Pantokrator_priority = top.add_value(raid_utils.Select( # 这个目前还没屁用，先写上再说
 #        '绝欧米茄/优先级设置/P1-全能之主', [('HTDH', 'h1mtstd1d2d3d4h2'),('THD', 'mtsth1h2d1d2d3d4'),], 'h1mtstd1d2d3d4h2'))
+    p2_Party_Synergy_priority = top.add_value(raid_utils.Select(
+        '绝欧米茄/优先级设置/P2-一运', [('HTDH', 'h1mtstd1d2d3d4h2'),('THD', 'mtsth1h2d1d2d3d4'),], 'h1mtstd1d2d3d4h2'))
+    p2_Wave_Repeater_priority = top.add_value(raid_utils.Select(
+        '绝欧米茄/优先级设置/P2.5-速射式波动炮', [('HTDH', 'h1mtstd1d2d3d4h2'),('THD', 'mtsth1h2d1d2d3d4'),], 'h1mtstd1d2d3d4h2'))
+    p3_Oversampled_Wave_Cannon_priority = top.add_value(raid_utils.Select(
+        '绝欧米茄/优先级设置/P3-探测式波动炮', [('HTDH', 'h1mtstd1d2d3d4h2'),('THD', 'mtsth1h2d1d2d3d4'),], 'h1mtstd1d2d3d4h2'))
