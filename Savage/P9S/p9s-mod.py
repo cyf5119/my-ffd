@@ -176,8 +176,7 @@ class DualSpell:
 
     def add_wp(self):
         if enable_waypoints.value:
-            raid_utils.raid_helper.waypoints.append_waypoint(self.get_way_point, auto_pop=self.dur, 
-                                                             surface_color=col.guide_surface, line_color=col.guide_line)
+            raid_utils.raid_helper.waypoints.append_waypoint(self.get_way_point, auto_pop=self.dur, surface_color=col.guide_surface, line_color=col.guide_line)
 
     def on_reset(self, _):
         self.pattern = 0
@@ -212,10 +211,9 @@ class DualSpell:
     def make_fire(self, actor_id):
         actor = raid_utils.NActor.by_id(actor_id)
         color = glm.vec4(1, .3, .3, .1) if raid_utils.is_class_job_dps(actor.class_job) else glm.vec4(.3, .3, 1, .1)
-        color1 = 0 # 0
         line_color = color + glm.vec4(0, 0, 0, .7)
         res = raid_utils.OmenGroup(
-            raid_utils.draw_circle(radius=6, pos=actor, surface_color=color1, line_color=line_color, duration=self.dur)
+            raid_utils.draw_circle(radius=6, pos=actor, surface_color=None, line_color=line_color, duration=self.dur)
         ) # + raid_utils.draw_share(radius=6, pos=actor, surface_color=color, line_color=line_color, duration=self.dur)
         for omen in res:
             omen.apply_effect(HideWhenActorDead, actor_id)
@@ -231,9 +229,7 @@ class DualSpell:
             width=8, length=40,
             pos=glm.vec3(100, 0, 100),
             facing=lambda _: glm.polar(actor.update().pos - glm.vec3(100, 0, 100)).y,
-            duration=self.dur,
-            surface_color=col.purple_surface,
-            line_color=col.purple_line
+            duration=self.dur, surface_color=col.purple_surface, line_color=col.purple_line
         )
 
     def make_lightnings(self):
@@ -246,9 +242,7 @@ class DualSpell:
             radius=70,
             pos=glm.vec3(100, 0, 100),
             inner_radius=14,
-            duration=self.dur,
-            surface_color=col.lightblue_surface,
-            line_color=col.lightblue_line
+            duration=self.dur, surface_color=col.lightblue_surface, line_color=col.lightblue_line
         )
 
 
@@ -279,18 +273,14 @@ class Combination:
             return raid_utils.draw_circle(
                 radius=12,
                 pos=actor_pos,
-                duration=dur,
-                surface_color=col.highlight_red_surface,
-                line_color=col.white_line
+                duration=dur, surface_color=col.highlight_red_surface, line_color=col.white_line
             )
         elif draw_type == self.donut:
             return raid_utils.draw_circle(
                 radius=20,
                 pos=actor_pos,
                 inner_radius=8,
-                duration=dur,
-                surface_color=col.highlight_red_surface,
-                line_color=col.white_line
+                duration=dur, surface_color=col.highlight_red_surface, line_color=col.white_line
             )
         elif draw_type == self.front:
             return raid_utils.draw_fan(
@@ -298,9 +288,7 @@ class Combination:
                 radius=40,
                 pos=actor_pos,
                 facing=actor.facing,
-                duration=dur,
-                surface_color=col.highlight_red_surface,
-                line_color=col.white_line
+                duration=dur, surface_color=col.highlight_red_surface, line_color=col.white_line
             )
         elif draw_type == self.back:
             return raid_utils.draw_fan(
@@ -308,9 +296,7 @@ class Combination:
                 radius=40,
                 pos=actor_pos,
                 facing=actor.facing + pi,
-                duration=dur,
-                surface_color=col.highlight_red_surface,
-                line_color=col.white_line
+                duration=dur, surface_color=col.highlight_red_surface, line_color=col.white_line
             )
 
     def on_cast(self, msg: NetworkMessage[zone_server.ActorCast]):
@@ -375,21 +361,18 @@ class UpliftAndArchaicRockBreaker:
         def _draw_share(actor_id):
             actor = raid_utils.NActor.by_id(actor_id)
             color = glm.vec4(1, .3, .3, .1) if raid_utils.is_class_job_dps(actor.class_job) else glm.vec4(.3, .3, 1, .1)
-            color1 = 0
             line_color = color + glm.vec4(0, 0, 0, .7)
             res = raid_utils.OmenGroup(
-                raid_utils.draw_circle(radius=6, pos=actor, surface_color=color1, line_color=line_color, duration=7.8)
+                raid_utils.draw_circle(radius=6, pos=actor, surface_color=None, line_color=line_color, duration=7.8)
             ) # + raid_utils.draw_share(radius=6, pos=actor, surface_color=color, line_color=line_color, duration=7.8)
             for omen in res:
                 omen.apply_effect(HideWhenActorDead, actor_id)
             return res
 
         if enable_waypoints.value:
-            raid_utils.raid_helper.waypoints.append_waypoint(self.get_knock_way_point(), auto_pop=cast_time + 1.5,
-                                                             surface_color=col.guide_surface, line_color=col.guide_line)
+            raid_utils.raid_helper.waypoints.append_waypoint(self.get_knock_way_point(), auto_pop=cast_time + 1.5, surface_color=col.guide_surface, line_color=col.guide_line)
 
-        raid_utils.draw_knock_predict_circle(radius=4, pos=pos, knock_distance=21, duration=cast_time + 1.5, 
-                                             surface_color=col.green_surface, line_color=col.green_line)
+        raid_utils.draw_knock_predict_circle(radius=4, pos=pos, knock_distance=21, duration=cast_time + 1.5, surface_color=col.guide_surface, line_color=col.guide_line)
         for a in raid_utils.iter_main_party(False):
             _draw_share(a.id)
 
@@ -522,28 +505,22 @@ class Levinstrike:
         if me_id in self.fire:
             fire_idx = self.fire.index(me_id)
             if fire_idx == idx:
-                raid_utils.raid_helper.waypoints.append_waypoint(self.wp_fire_active(idx), auto_pop=dur,
-                                                                 surface_color=col.guide_surface, line_color=col.guide_line)
+                raid_utils.raid_helper.waypoints.append_waypoint(self.wp_fire_active(idx), auto_pop=dur, surface_color=col.guide_surface, line_color=col.guide_line)
             elif fire_idx == (idx + 2) % 4:
-                raid_utils.raid_helper.waypoints.append_waypoint(self.wp_fire_tower(idx), auto_pop=dur,
-                                                                 surface_color=col.guide_surface, line_color=col.guide_line)
+                raid_utils.raid_helper.waypoints.append_waypoint(self.wp_fire_tower(idx), auto_pop=dur, surface_color=col.guide_surface, line_color=col.guide_line)
             else:
-                raid_utils.raid_helper.waypoints.append_waypoint(self.wp_fire_idle(idx), auto_pop=dur,
-                                                                 surface_color=col.guide_surface, line_color=col.guide_line)
+                raid_utils.raid_helper.waypoints.append_waypoint(self.wp_fire_idle(idx), auto_pop=dur, surface_color=col.guide_surface, line_color=col.guide_line)
         elif self.ice[idx] == me_id:
-            raid_utils.raid_helper.waypoints.append_waypoint(self.wp_ice_active(idx), auto_pop=dur,
-                                                             surface_color=col.guide_surface, line_color=col.guide_line)
+            raid_utils.raid_helper.waypoints.append_waypoint(self.wp_ice_active(idx), auto_pop=dur, surface_color=col.guide_surface, line_color=col.guide_line)
         else:
-            raid_utils.raid_helper.waypoints.append_waypoint(self.wp_ice_idle(idx), auto_pop=dur,
-                                                             surface_color=col.guide_surface, line_color=col.guide_line)
+            raid_utils.raid_helper.waypoints.append_waypoint(self.wp_ice_idle(idx), auto_pop=dur, surface_color=col.guide_surface, line_color=col.guide_line)
 
     def draw_ball(self, idx, dur):
         source_pos = self.ball[idx]
         if source_pos is None:
             return logger.warning(f"ball[{idx}] is None: {source_pos=}")
         target_pos = center + glm.normalize(center - source_pos) * 16
-        return raid_utils.draw_circle(radius=6, pos=target_pos, duration=dur,
-                                      surface_color=col.purple_surface, line_color=col.purple_line)
+        return raid_utils.draw_circle(radius=6, pos=target_pos, duration=dur, surface_color=col.purple_surface, line_color=col.purple_line)
 
     def draw_fire(self, idx, dur):
         source_pos = self.ball[idx]
@@ -557,17 +534,15 @@ class Levinstrike:
         return raid_utils.draw_distance_line(
             source_pos, target, min_distance=20, duration=dur
         ), raid_utils.draw_circle(
-            radius=6, pos=target, duration=dur,
-            surface_color=col.red_surface, line_color=col.red_line
+            radius=6, pos=target, duration=dur, surface_color=col.red_surface, line_color=col.red_line
         )
 
     def draw_ice(self, idx, dur):
         if idx >= len(self.ice): return
-        return raid_utils.draw_circle(radius=20, pos=raid_utils.NActor.by_id(self.ice[idx]), duration=dur,
-                                      surface_color=0, line_color=col.lightblue_line)
+        return raid_utils.draw_circle(radius=20, pos=raid_utils.NActor.by_id(self.ice[idx]), duration=dur, surface_color=None, line_color=col.lightblue_line)
 
 
-@p9s.on_cast(33133)
+@p9s.on_cast(33133) # 双奶分摊
 def on_cast_archaic_demolis(evt: 'raid_utils.NetworkMessage[zone_server.ActorCast]'):
     for actor in raid_utils.iter_main_party(False):
         if raid_utils.is_class_job_healer(actor.class_job):
@@ -619,7 +594,7 @@ class EclipticMeteor:
             raise Exception('fail to get role idx when play waypoints on UpliftAndArchaicRockBreaker')
         rad = pos_rad_4[role_idx]
         comet_rad = glm.polar(next(raid_utils.find_actor_by_base_id(16090)).pos - center).y % pi2
-        if is_x := comet_rad % pi_2 < .5: rad += pi_4
+        if is_x := abs((comet_rad % pi_2) - pi_4) > .3: rad += pi_4
         logger.debug(f'{pos_rad_4[role_idx]/pi=:.2f} {rad/pi=:.2f} {is_x:=} {comet_rad/pi=:.2f}')
         return glm.vec3(math.sin(rad), 0, math.cos(rad)) * 6.5 + center
 
@@ -627,17 +602,13 @@ class EclipticMeteor:
         if enable_waypoints.value:
             me = raid_utils.get_me()
             if me.status.has_status(3323):  # 暗属性耐性大幅降低/已吃分摊
-                raid_utils.raid_helper.waypoints.append_waypoint(self.get_wp_fan(), auto_pop=dur_fan,
-                                                                 surface_color=col.guide_surface, line_color=col.guide_line)
+                raid_utils.raid_helper.waypoints.append_waypoint(self.get_wp_fan(), auto_pop=dur_fan, surface_color=col.guide_surface, line_color=col.guide_line)
             elif me.status.has_status(33146):  # 雷属性耐性大幅降低/已吃扇形
-                raid_utils.raid_helper.waypoints.append_waypoint(self.get_wp_share(), auto_pop=dur_share,
-                                                                 surface_color=col.guide_surface, line_color=col.guide_line)
+                raid_utils.raid_helper.waypoints.append_waypoint(self.get_wp_share(), auto_pop=dur_share, surface_color=col.guide_surface, line_color=col.guide_line)
             elif raid_utils.is_class_job_dps(me.class_job) == (self.order_type.value == 1):  # dps share first and me is dps/ tn share first and me is tn
-                raid_utils.raid_helper.waypoints.append_waypoint(self.get_wp_share(), auto_pop=dur_share,
-                                                                 surface_color=col.guide_surface, line_color=col.guide_line)
+                raid_utils.raid_helper.waypoints.append_waypoint(self.get_wp_share(), auto_pop=dur_share, surface_color=col.guide_surface, line_color=col.guide_line)
             else:
-                raid_utils.raid_helper.waypoints.append_waypoint(self.get_wp_fan(), auto_pop=dur_fan,
-                                                                 surface_color=col.guide_surface, line_color=col.guide_line)
+                raid_utils.raid_helper.waypoints.append_waypoint(self.get_wp_fan(), auto_pop=dur_fan, surface_color=col.guide_surface, line_color=col.guide_line)
 
     def on_cast_thunderbolt(self, evt: NetworkMessage[zone_server.ActorCast]):
         source_actor = raid_utils.NActor.by_id(evt.header.source_id)
@@ -741,8 +712,7 @@ class ChimericSuccession:
                     pos = self.get_wp_guide(min_dis=8, max_dis=10)
                 case _:  # dis {,7}
                     pos = self.get_wp_guide(max_dis=7)
-            raid_utils.raid_helper.waypoints.append_waypoint(pos, auto_pop=dur,
-                                                             surface_color=col.guide_surface, line_color=col.guide_line)
+            raid_utils.raid_helper.waypoints.append_waypoint(pos, auto_pop=dur, surface_color=col.guide_surface, line_color=col.guide_line)
 
     def on_start_cast(self, evt: NetworkMessage[zone_server.ActorCast]):
         self.enable = True
@@ -763,8 +733,7 @@ class ChimericSuccession:
         if not enable_waypoints.value: return
         me_id = raid_utils.get_me().id
         if me_id in self.ice: return
-        raid_utils.raid_helper.waypoints.append_waypoint(self.get_fire_wp, auto_pop=dur,
-                                                         surface_color=col.guide_surface, line_color=col.guide_line)
+        raid_utils.raid_helper.waypoints.append_waypoint(self.get_fire_wp, auto_pop=dur, surface_color=col.guide_surface, line_color=col.guide_line)
 
     def on_lockon_ice(self, evt: 'raid_utils.ActorControlMessage[actor_control.SetLockOn]'):
         if not self.enable: return
@@ -783,8 +752,7 @@ class ChimericSuccession:
 
     def set_ice_wp(self, dur):
         if not enable_waypoints.value: return
-        raid_utils.raid_helper.waypoints.append_waypoint(self.get_ice_wp, auto_pop=dur,
-                                                         surface_color=col.guide_surface, line_color=col.guide_line)
+        raid_utils.raid_helper.waypoints.append_waypoint(self.get_ice_wp, auto_pop=dur, surface_color=col.guide_surface, line_color=col.guide_line)
 
     def draw_ice(self, idx, dur):
         target_id = self.ice[idx]
@@ -795,8 +763,7 @@ class ChimericSuccession:
         return raid_utils.draw_circle(
             radius=20,
             pos=raid_utils.NActor.by_id(target_id),
-            duration=dur,
-            surface_color=col.lightblue_surface, line_color=col.lightblue_line
+            duration=dur, surface_color=col.lightblue_surface, line_color=col.lightblue_line
         )
 
 
