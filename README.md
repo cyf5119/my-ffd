@@ -13,5 +13,9 @@
 
 * [荒天之狱](/Savage/P9to12S)
 
+###  异闻
+
+* [阿罗阿罗](/Criterion/aal)
+
 
 
